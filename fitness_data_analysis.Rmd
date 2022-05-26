@@ -61,7 +61,7 @@ Bellabeat was looking for information from the analysis of its available consume
 
 
 
-# Data Preparation {.tabset}
+# Data Preparation 
 
 ***
 
@@ -222,7 +222,7 @@ paged_table(hourly_heartrate, list(rows.print = 5))
 
 
 
-# Analyze {.tabset}
+# Analyze 
 
 ***
 
@@ -237,7 +237,6 @@ The following analysis will focus on these three issues. The goal is to find rel
 
 ## Preference Features and Timing
 
-### Preference Features and Timing
 The analysis of preference features helps the company get to know what kinds of functions people enjoy using. And analyzing timing can know the daily work and the rest of the users. Both the analyses empower the company to get a better understanding of the users. 
 
 ### Preference features
@@ -281,7 +280,6 @@ What we have found:\
 
 ## Sleep Quality
 
-### Sleep Quality
 The analysis of sleep quality focus on the condition that how long people need to fall asleep. First, we need to identify the level of sleep quality in the dataset. Second, studying their daily behavior to see what makes them different. Finally, finding when people usually have the sleep issue.
 
 ### Sleep quality distribution
@@ -413,7 +411,6 @@ According to the bar graph that shows the average minutes needed to fall asleep 
 
 ## Calories Burn
 
-### Calories Burn
 The analysis of calories burn focuses on the relationship between different activities and calories burn, and studies what activities are most effective for burning calories. Additionally, we look into the results and benefits for people who follow the daily activity target according to medical research.
 
 ### Relationship between different activities and calories burn
@@ -453,6 +450,7 @@ sedentary.cor <- daily_df %>%
 grid.arrange(steps.cor, v_active.cor, f_active.cor, l_active.cor, sedentary.cor, nrow = 2)
 
 ```
+
 Insights from the correlation plot between daily activities to calories burn:
 
 * **Total Steps** and **Very Active Minutes** show the **strongest relationship to Calories.**
