@@ -1,10 +1,9 @@
 ---
-title: "Fitness Data Analysis"
+title: "Data Analysis: Fitness User Bahavior and Preferences"
 author: "Powei Fan"
-date: "4/17/2022"
 output: 
   html_document:
-      code_folding: hide
+      code_folding: show
       toc: true
       toc_depth: 3
       md_extensions: +emoji
@@ -42,6 +41,8 @@ library(stringr)
 #install.packages("gridExtra")
 library(gridExtra)
 ```
+
+![](/Users/fanbowei/Downloads/html5up-read-only/images/image.webp)
 
 # Introduction
 
@@ -85,8 +86,10 @@ Units Of Measurement  | File Name
 * The entire project will be conducted through the use of the R programming language. From data importing, formatting & cleaning, analysis, and visualization to the sharing of findings, processes and results are documented clearly throughout this project.
 ```{r dataset loading, message=FALSE, warning=FALSE, highlight=TRUE}
 ##Dataset loading##
+
 #set the file location
 setwd('/Users/fanbowei/Downloads/Fitabase Data 4.12.16-5.12.16 2/')
+
 #import dataset
 daily_activity <- read_csv("dailyActivity_merged.csv") #TotalStep, TotalDistance, (level)Distance, ()Minutes, Calories
 seconds_heartrate <- read_csv("heartrate_seconds_merged.csv")
@@ -115,6 +118,7 @@ daily_activity <- daily_activity %>%
   mutate(activity_date = mdy(activity_date), week_date = weekdays(activity_date), .after = activity_date) %>% #convert chr to date, add new column weekday
   rename(date = activity_date) %>% #rename date variable
   group_by(id, date) #remove duplicate
+
 #*****daily_sleep*****#
 daily_sleep <- daily_sleep %>%
   clean_names() %>%
@@ -122,6 +126,7 @@ daily_sleep <- daily_sleep %>%
   mutate(total_minutes_fall_asleep = total_time_in_bed - total_minutes_asleep) %>% #column to record the total minutes to fall asleep
   rename(date = sleep_day) %>%
   group_by(id, date)
+
 #*****daily_weight*****#
 daily_weight <- daily_weight %>% 
   clean_names() %>%
@@ -134,18 +139,21 @@ hourly_steps <- hourly_steps %>%
   mutate(activity_hour = mdy_hms(activity_hour), week_date = weekdays(activity_hour), .after = activity_hour) %>%
   rename(datetime = activity_hour) %>%
   group_by(id, datetime)
+
 #*****hourly_calories*****$
 hourly_calories <- hourly_calories %>%
   clean_names() %>%
   mutate(activity_hour = mdy_hms(activity_hour), week_date = weekdays(activity_hour), .after = activity_hour) %>%
   rename(datetime = activity_hour) %>%
   group_by(id, datetime)
+
 #*****hourly_intensities*****#
 hourly_intensities <- hourly_intensities %>%
   clean_names() %>%
   mutate(activity_hour = mdy_hms(activity_hour), week_date = weekdays(activity_hour), .after = activity_hour) %>%
   rename(datetime = activity_hour) %>%
   group_by(id, datetime)
+
 #*****seconds_heartrate*****#
 hourly_heartrate <- seconds_heartrate %>%
   clean_names() %>%
@@ -164,6 +172,7 @@ hourly_heartrate <- seconds_heartrate %>%
 #left join the daily datasets into daily_df
 daily_df <- list(daily_activity, daily_sleep, daily_weight) %>%
   reduce(left_join, by = c("id", "date", "week_date"))
+
 #left join the hourly datasets into hourly_df
 hourly_df <- list(hourly_steps, hourly_calories, hourly_intensities, hourly_heartrate) %>%
   reduce(left_join, by = c("id", "datetime", "week_date"))  
@@ -254,6 +263,8 @@ intensity.df <- hourly_df %>%
   mutate(hour = strftime(datetime, format = "%k", "GMT"), week_date = factor(week_date, levels = c("Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"))) %>%
   group_by(week_date, hour) %>%
   summarise(average_intensity = mean(total_intensity))
+
+
 ggplot(intensity.df, mapping = aes(week_date, hour, fill = average_intensity)) +
   geom_tile(colour = "white") +
   scale_fill_gradient(low = "#f4fff6", high="#0bb730", breaks = c(0,5,15,25)) +
@@ -275,7 +286,7 @@ The analysis of sleep quality focus on the condition that how long people need t
 ### Sleep quality distribution
 Using the subtraction of variable total_minutes_asleep and total_time_in_bed, we get the total_minutes_fall_asleep which will be used in our analysis. The graph below shows the sleep quality distribution of the dataset;
 
-```{r sleep distribution, echo=FALSE, message=FALSE, warning=FALSE}
+```{r sleep distribution, message=FALSE, warning=FALSE}
 id.df <- daily_df %>%
   ungroup() %>%
   select(id,total_steps, very_active_minutes, fairly_active_minutes, lightly_active_minutes, sedentary_minutes, calories, total_minutes_asleep, total_minutes_fall_asleep) %>%
@@ -289,6 +300,7 @@ id.df <- daily_df %>%
             avg_calories = mean(calories),
             avg_minutes_asleep = mean(total_minutes_asleep),
             avg_fall_asleep = mean(total_minutes_fall_asleep))
+
 #Plot sleep condition by id
 id.df %>%
   ggplot(aes(reorder(id,-avg_fall_asleep), avg_fall_asleep)) +
@@ -333,6 +345,7 @@ active <- sleep_group %>%
     scale_fill_brewer(palette="Dark2") +
     labs(x = "Group", y = "Minutes", fill = "Active Type")  +
     scale_x_discrete(labels=c("Well", "Normal", "Problem"))
+
 #Plot the average steps and  minutes asleep by type and by group
 steps_asleep <- sleep_group %>%
   group_by(group) %>%
@@ -346,9 +359,8 @@ steps_asleep <- sleep_group %>%
     scale_fill_brewer(palette="Accent") +
     labs(x = "Group", y = "Minutes", fill = "Usual behavior") +
     scale_x_discrete(labels=c("Well", "Normal", "Problem"))
+
 grid.arrange(active, steps_asleep, nrow = 1)
-#annotate_figure(plot, top = text_grob("Daily Activity by Group", 
-#               color = "black", face = "bold", size = 13))
 ```
 
 Several interesting findings from the graph above:
@@ -365,6 +377,7 @@ It is valuable to discover that each group has a different daily routine and pre
 #Patterns for different day of a week 
 #install.packages("viridisLite")
 library(viridis)
+
 daily_df %>%
   #set level to the day of week
   mutate(week_date = factor(week_date, levels = c("Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"))) %>%
@@ -386,6 +399,7 @@ daily_df %>%
        y = "Average minutes to fall asleep") +
   theme(plot.title = element_text(hjust = 0.5, face = "bold"),
         plot.subtitle = element_text(hjust = 0.5, color = "grey54"))
+
 ```
 
 According to the bar graph that shows the average minutes needed to fall asleep by the day of the week:
@@ -406,27 +420,34 @@ steps.cor <- daily_df %>%
    geom_smooth(method = "lm", alpha = 0.2, color = "cyan3") +
    geom_point(alpha = 0.1) +
    labs(x = "Total steps")
+
 v_active.cor <- daily_df %>%
    ggplot(aes(very_active_minutes, calories)) +
    geom_smooth(method = "lm", alpha = 0.2, color = "cyan3") +
    geom_point(alpha = 0.1) +
    labs(x = "Very active minutes")
+
 f_active.cor <- daily_df %>%
    ggplot(aes(fairly_active_minutes, calories)) +
    geom_smooth(method = "lm", alpha = 0.2, color = "deepskyblue3") +
    geom_point(alpha = 0.1) +
    labs(x = "Fairly active minutes")
+
 l_active.cor <- daily_df %>%
    ggplot(aes(lightly_active_minutes, calories)) +
    geom_smooth(method = "lm", alpha = 0.2, color = "deepskyblue3") +
    geom_point(alpha = 0.1) +
    labs(x = "Lightly active minutes")
+
 sedentary.cor <- daily_df %>%
    ggplot(aes(sedentary_minutes, calories)) +
    geom_smooth(method = "lm", alpha = 0.2, color = "grey15") +
    geom_point(alpha = 0.1) +
    labs(x = "Sedentary minutes")
+
+
 grid.arrange(steps.cor, v_active.cor, f_active.cor, l_active.cor, sedentary.cor, nrow = 2)
+
 ```
 
 Insights from the correlation plot between daily activities to calories burn:
@@ -447,6 +468,7 @@ l.df <- daily_df %>%
   
 #Conduct a linear regression model
 l.model <- lm(calories ~., data = l.df)
+
 #Plot the value of each coefficient 
 coefplot(l.model, intercept = FALSE, outerCI = 0, lwdInner = 0.5) +
   scale_y_discrete(labels=c("Every 100 Steps", "Very Active mins.", "Fairly Active mins.", "Lightly Active mins.")) +
@@ -547,15 +569,3 @@ Based on these findings my recommendations to the company would be:\
 \
   
   
-© 2022 GitHub, Inc.
-Terms
-Privacy
-Security
-Status
-Docs
-Contact GitHub
-Pricing
-API
-Training
-Blog
-About
